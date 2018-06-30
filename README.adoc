@@ -1,5 +1,5 @@
+
 :spring_version: current
-:toc:
 :project_id: route
 :spring_version: current
 :spring_boot_version: 2.0.3.RELEASE
@@ -9,22 +9,55 @@
 This is the route service. It works together with the DeliveryRoute application for the TomTom
 BRIDGE device.
 
+== Prerequisites
+
+needs docker
+needs mysql-client 8 (https://websiteforstudents.com/install-mysql-8-0-on-ubuntu-16-04-17-10-18-04/)
+
+== Docker setup (mysql)
+
+----
+docker run -d -p 3306:3306 --name mysql --mount src=mysql-data,dst=/var/lib/mysql -e MYSQL_ROOT_PASSWORD='aaa' mysql:latest
+mysql -u root -h 127.0.0.1 --password
+mysql> create database route; -- Create the new database
+mysql> create user 'route'@'%' identified by 'bbb'; -- Creates the user
+mysql> grant all on route.* to 'route'@'%'; -- Gives all the privileges to the new user on the newly created database
+mysql> quit
+----
+
+Removing docker container (and volume):
+----
+docker rm mysql
+docker volume rm mysql-data
+----
+
 == Building it
 
 ----
 ./gradlew build
 ----
 
+
 == Running it
 
 ----
-docker run --name mysql -e MYSQL_ROOT_PASSWORD='LKDJLKDJ&56256,,989' -d mysql:latest
+docker start mysql
 java -jar build/libs/route-0.0.1-SNAPSHOT.jar
 ----
 
 == Using it
 
-Go to 
 ----
 http://localhost:8080/swagger-ui.html
 ----
+
+== Getting into mysql
+docker run -it --link mysql:mysql --rm mysql sh -c 'exec mysql -h"$MYSQL_PORT_3306_TCP_ADDR" -P"$MYSQL_PORT_3306_TCP_PORT" -uroot -p"$MYSQL_ENV_MYSQL_ROOT_PASSWORD"'
+
+== Guides used
+
+* 
+* https://spring.io/guides/gs/accessing-data-mysql/
+* https://docs.docker.com/storage/volumes/#create-and-manage-volumes
+
+
